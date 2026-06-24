@@ -1,0 +1,151 @@
+/** Idin Hall
+* CS-210 - Programming Languages
+* Project One (Chada Tech Clocks)
+*/
+
+#include <iostream>
+#include <iomanip>
+#include <string>
+
+using namespace std;
+
+// Group clock variables
+struct TimeClock {
+    int hours = 0;
+    int minutes = 0;
+    int seconds = 0;
+};
+
+// Input validation 
+int getInteger(const std::string& prompt, int minValue, int maxValue) {
+    int userInput;
+    while (true) {
+        std::cout << prompt;
+        if (std::cin >> userInput && userInput >= minValue && userInput <= maxValue) {
+            return userInput;
+        }
+        else {
+            std::cout << "Invalid input. Please enter value between "
+                << minValue << " and " << maxValue << "." << std::endl;
+            std::cin.clear(); // clear error flag
+            std::cin.ignore(1000, '\n'); // Discard bad characters
+        }
+    }
+}
+
+// formats and returns time String for 12-hours clock layout
+std::string format12Hour(const TimeClock& time) {
+    std::string period = (time.hours >= 12) ? "PM" : "AM";
+    int displayHour = time.hours;
+
+    if (displayHour == 0) {
+        displayHour = 12; // Midnight adjustment
+    }
+    else if (displayHour > 12) {
+        displayHour -= 12; // Afternoon/Evening adjustment
+    }
+
+    // standard zero-padded logic
+    std::string hourStr = (displayHour < 10) ? "0" + std::to_string(displayHour) : std::to_string(displayHour);
+    std::string minStr = (time.minutes < 10) ? "0" + std::to_string(time.minutes) : std::to_string(time.minutes);
+    std::string secStr = (time.seconds < 10) ? "0" + std::to_string(time.seconds) : std::to_string(time.seconds);
+
+    return hourStr + ":" + minStr + ":" + secStr + " " + period;
+}
+
+// Formats and returns a time string for 24-hour clock 
+std::string format24Hour(const TimeClock& time) {
+    std::string hourStr = (time.hours < 10) ? "0" + std::to_string(time.hours) : std::to_string(time.hours);
+    std::string minStr = (time.minutes < 10) ? "0" + std::to_string(time.minutes) : std::to_string(time.minutes);
+        std::string secStr = (time.seconds < 10) ? "0" + std::to_string(time.seconds) : std::to_string(time.seconds);
+
+    return hourStr + ":" + minStr + ":" + secStr;
+}
+
+// Renders both formatting outputs
+void displayClocks(const TimeClock& time) {
+    std::cout << "************************** **************************" << std::endl;
+    std::cout << "* 12-Hour Clock           ** 24-Hour clock          *" << std::endl;
+    std::cout << "* " << format12Hour(time) << "           * * " << format24Hour(time) << "              *" << std::endl;
+    std::cout << "************************** **************************" << std::endl;
+}
+
+// Prints the user selection layout cleanly
+void displayMenu() {
+    std::cout << std::endl;
+    std::cout << "***************************" << std::endl;
+    std::cout << "* 1 - Add One Hour        *" << std::endl;
+    std::cout << "* 2 - Add One Minute      *" << std::endl;
+    std::cout << "* 3 - Add One second      *" << std::endl;
+    std::cout << "* 4 - Exit Program        *" << std::endl;
+    std::cout << "***************************" << std::endl;
+}
+
+// Logic to add an hour with rollover 
+void addHour(TimeClock& time) {
+    time.hours = (time.hours + 1) % 24;
+}
+
+// Logic to add a minute with rollover to hours
+void addMinute(TimeClock& time) {
+    if (time.minutes == 59) {
+        time.minutes == 0;
+        addHour(time);
+    }
+    else {
+        time.minutes++;
+    }
+}
+
+// Logic to add a second with rollover to minutes
+void addSecond(TimeClock& time) {
+    if (time.seconds == 59) {
+        time.seconds = 0;
+        addMinute(time);
+    }
+    else {
+        time.seconds++;
+    }
+}
+
+// Process the verified user input choice
+void processSelection(int selection, TimeClock& time) {
+    switch (selection) {
+    case 1:
+        addHour(time);
+        break;
+    case 2:
+        addMinute(time);
+        break;
+    case 3:
+        addSecond(time);
+        break;
+    case 4:
+        std::cout << "Exiting application.Goodbye!" << std::endl;
+        break;
+    }
+}
+
+// Main execution container
+int main() {
+    TimeClock appTime;
+    int menuSelection = 0;
+
+    // Phase 1-3: Gather Inintial Data using getInteger
+    std::cout << "--- Initial clock setup---" << std::endl;
+    appTime.hours = getInteger("Enter the  hour (0-23): ", 0, 23);
+    appTime.minutes = getInteger("Enter the minutes (0-59): ", 0, 59);
+    appTime.seconds = getInteger("Enter the seconds (0-59): ", 0, 59);
+    std::cout << std::endl;
+
+    // Loop items 5-8 until program exits 
+    while (menuSelection != 4) {
+        displayClocks(appTime);
+        displayMenu();
+
+        menuSelection = getInteger("Enter your choice (1-4): ", 1, 4);
+        processSelection(menuSelection, appTime);
+    }
+
+    return 0;
+}
